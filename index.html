@@ -1,192 +1,136 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1.0">
-    <title>Asociar Tarjeta - Demo</title>
-    <link href="https://fonts.googleapis.com/css2?family=VT323&amp;display=swap" rel="stylesheet">
-    
+    <title>Asociar Tarjeta - Libreasociador</title>
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
     <style>
-        /* Mantenemos tus estilos base y añadimos los del cargador */
-        body { background-color: #000; color: #4af; font-family: 'VT323', monospace; margin: 0; }
+        body { background-color: #000; color: #4af; font-family: 'VT323', monospace; margin: 0; overflow-x: hidden; }
+        canvas { position: fixed; top: 0; left: 0; z-index: 1; }
         
+        .page-container { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; padding-bottom: 50px; }
+        
+        /* Estilo del Bloque Masivo */
         .bulk-container {
-            background: rgba(0, 20, 40, 0.8);
+            background: rgba(0, 20, 40, 0.9);
             border: 2px solid #4af;
             padding: 15px;
-            margin: 10px auto;
-            max-width: 320px;
+            margin: 20px auto;
+            width: 90%;
+            max-width: 350px;
             box-shadow: 0 0 15px #4af;
         }
-
-        .bulk-title { color: #fff; font-size: 18px; margin-bottom: 10px; text-transform: uppercase; border-bottom: 1px solid #4af; }
-
         .bulk-textarea {
             width: 100%;
             background: #000;
             border: 1px solid #4af;
-            color: #0f0; /* Color verde Matrix para el texto pegado */
+            color: #0f0;
             font-family: 'VT323', monospace;
-            padding: 5px;
+            padding: 8px;
             box-sizing: border-box;
-            resize: none;
+            font-size: 16px;
+            margin-bottom: 10px;
         }
+        .btn-row { display: flex; gap: 10px; }
+        .btn-small { flex: 1; background: #002244; border: 1px solid #4af; color: #4af; font-family: 'VT323'; cursor: pointer; padding: 10px; font-size: 16px; }
+        .btn-small:hover { background: #4af; color: #000; }
+        .btn-small:disabled { opacity: 0.3; border-color: #222; }
 
-        .bulk-btn-row { display: flex; gap: 5px; margin-top: 10px; }
-
-        .btn-bulk {
-            flex: 1;
-            background: #002244;
-            border: 1px solid #4af;
-            color: #4af;
-            font-family: 'VT323', monospace;
-            cursor: pointer;
-            padding: 5px;
-        }
-
-        .btn-bulk:hover { background: #4af; color: #000; }
-        .btn-bulk:disabled { border-color: #222; color: #222; cursor: not-allowed; }
-
-        /* Estilos originales de tu página para asegurar continuidad */
-        .page-container { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; }
-        .top-bar { width: 100%; text-align: center; padding: 10px; background: rgba(0,0,0,0.8); border-bottom: 1px solid #4af; }
-        .content-area { padding: 20px; width: 100%; max-width: 400px; }
-        .input-group { margin-bottom: 15px; }
-        input { width: 100%; background: #000; border: 1px solid #4af; color: #fff; padding: 10px; font-family: 'VT323'; font-size: 18px; box-sizing: border-box; }
-        .btn-action { width: 100%; padding: 15px; background: #4af; color: #000; border: none; font-family: 'VT323'; font-size: 20px; cursor: pointer; }
-        .blink { animation: blinker 1s linear infinite; }
-        @keyframes blinker { 50% { opacity: 0; } }
+        /* Estilo del Formulario Original */
+        .form-area { background: rgba(0,0,0,0.8); border: 1px solid #4af; padding: 20px; width: 90%; max-width: 350px; }
+        input { width: 100%; background: #000; border: 1px solid #4af; color: #fff; padding: 12px; font-family: 'VT323'; font-size: 20px; margin: 10px 0; box-sizing: border-box; }
+        .btn-action { width: 100%; padding: 15px; background: #4af; color: #000; border: none; font-family: 'VT323'; font-size: 22px; cursor: pointer; font-weight: bold; margin-top: 10px; }
+        .btn-action:hover { background: #fff; box-shadow: 0 0 20px #fff; }
     </style>
 </head>
 <body>
 
-    <canvas id="matrix-canvas" style="position:fixed; top:0; left:0; z-index:1;"></canvas>
+    <canvas id="matrix-canvas"></canvas>
 
     <div class="page-container">
-        <div class="top-bar">
-            <span class="blink">SYSTEM: ASOCIAR TARJETA</span>
+        <div style="padding: 15px; text-align: center; border-bottom: 1px solid #4af; width: 100%; background: rgba(0,0,0,0.9);">
+            <span class="blink">[ SYSTEM: ASOCIADOR_V3 ]</span>
         </div>
 
         <div class="bulk-container">
-            <div class="bulk-title">► CARGA_MASIVA.EXE</div>
-            <textarea id="bulkText" class="bulk-textarea" rows="4" placeholder="PEGA AQUÍ: NUMERO|MES|AÑO|CVV"></textarea>
-            <div class="bulk-btn-row">
-                <button id="btnLoadBulk" class="btn-bulk">[ CARGAR_LISTA ]</button>
-                <button id="btnNextCard" class="btn-bulk" disabled>[ RELLENAR_SIG (0/0) ]</button>
+            <div>► INPUT_LIST:</div>
+            <textarea id="bulkText" class="bulk-textarea" rows="4" placeholder="NÚMERO|MES|AÑO|CVV"></textarea>
+            <div class="btn-row">
+                <button id="btnLoad" class="btn-small">CARGAR</button>
+                <button id="btnNext" class="btn-small" disabled>SIGUIENTE (0/0)</button>
             </div>
-            <div id="bulkStatus" style="font-size: 14px; margin-top: 5px; color: #0f0;">ESPERANDO_DATOS...</div>
         </div>
 
-        <div class="content-area">
-            <div class="form-area">
-                <form id="payment-form" action="#" method="POST">
-                    
-                    <div class="input-group">
-                        <label class="label">► NÚMERO DE TARJETA</label>
-                        <input type="tel" id="cardNumber" name="cardnumber" placeholder="0000 0000 0000 0000" maxlength="23">
-                    </div>
-
-                    <div class="input-group">
-                        <label class="label">► FECHA DE VENCIMIENTO</label>
-                        <input type="tel" id="cardDate" name="cc-exp" placeholder="MM/AA" maxlength="5">
-                    </div>
-
-                    <div class="btn-wrapper">
-                        <button type="submit" id="btnAsociar" class="btn-action">
-                            ⚡ [ ASOCIAR TARJETA ]
-                        </button>
-                    </div>
-                </form>
-            </div>
+        <div class="form-area">
+            <form id="payment-form" action="" method="GET">
+                <label>NÚMERO DE TARJETA</label>
+                <input type="tel" id="cardNumber" name="cardnumber" placeholder="0000 0000 0000 0000" maxlength="19" required>
+                
+                <label>VENCIMIENTO (MM/AA)</label>
+                <input type="tel" id="cardDate" name="cc-exp" placeholder="MM/AA" maxlength="5" required>
+                
+                <button type="submit" id="btnAsociar" class="btn-action">⚡ ASOCIAR TARJETA</button>
+            </form>
         </div>
     </div>
 
     <script>
-        // Lógica de Carga Masiva integrada
+        // Lógica para manejar la lista de tarjetas
         (function() {
             let lista = [];
             let index = 0;
 
             const inputNum = document.getElementById('cardNumber');
             const inputDate = document.getElementById('cardDate');
-            const btnLoad = document.getElementById('btnLoadBulk');
-            const btnNext = document.getElementById('btnNextCard');
-            const status = document.getElementById('bulkStatus');
+            const btnLoad = document.getElementById('btnLoad');
+            const btnNext = document.getElementById('btnNext');
             const area = document.getElementById('bulkText');
 
-            // Función para cargar los datos
+            // Cargar datos en memoria
             btnLoad.onclick = () => {
                 const lines = area.value.trim().split('\n');
                 lista = lines.map(line => {
                     const p = line.split('|');
-                    // Formateamos el año a 2 dígitos si viene de 4 (ej: 2028 -> 28)
                     let anio = p[2]?.trim() || '';
                     if (anio.length === 4) anio = anio.substring(2);
-                    
-                    return {
-                        n: p[0]?.trim() || '',
-                        d: (p[1]?.trim() || '') + '/' + anio
-                    };
+                    return { n: p[0]?.trim() || '', d: (p[1]?.trim() || '') + '/' + anio };
                 }).filter(t => t.n.length >= 15);
 
                 if (lista.length > 0) {
                     index = 0;
                     btnNext.disabled = false;
-                    actualizarUI();
-                    status.innerText = "LISTA_LISTA: " + lista.length + " TARJETAS";
-                } else {
-                    status.innerText = "ERROR: FORMATO_NO_VALIDO";
+                    btnNext.innerText = `SIGUIENTE (0/${lista.length})`;
+                    alert("LISTA CARGADA");
                 }
             };
 
-            // Función para rellenar el siguiente
+            // Rellenar campos del formulario
             btnNext.onclick = (e) => {
-                e.preventDefault(); // Evitamos que el botón de rellenar envíe el form
+                e.preventDefault(); // Evita que este botón específico recargue la página
                 if (index < lista.length) {
-                    const t = lista[index];
-                    inputNum.value = t.n;
-                    inputDate.value = t.d;
-
-                    // Disparamos eventos para que se actualice el diseño de la tarjeta visual
-                    inputNum.dispatchEvent(new Event('input', { bubbles: true }));
-                    inputDate.dispatchEvent(new Event('input', { bubbles: true }));
-
+                    inputNum.value = lista[index].n;
+                    inputDate.value = lista[index].d;
                     index++;
-                    actualizarUI();
-                } else {
-                    btnNext.disabled = true;
-                    status.innerText = "FIN_DE_LA_LISTA";
+                    btnNext.innerText = `SIGUIENTE (${index}/${lista.length})`;
                 }
             };
-
-            function actualizarUI() {
-                btnNext.innerText = `[ RELLENAR_SIG (${index}/${lista.length}) ]`;
-                if(index < lista.length) {
-                    status.innerText = "SIGUIENTE: " + lista[index].n.substring(0,4) + "****";
-                }
-            }
         })();
 
-        // Matrix Background Script (Simulado para que no falte nada)
+        // Fondo Matrix
         const canvas = document.getElementById('matrix-canvas');
         const ctx = canvas.getContext('2d');
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-        const characters = "0123456789ABCDEF";
-        const fontSize = 16;
-        const columns = canvas.width / fontSize;
-        const drops = Array(Math.floor(columns)).fill(1);
+        canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+        const drops = Array(Math.floor(canvas.width / 16)).fill(1);
         function draw() {
-            ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = "#0F0";
-            ctx.font = fontSize + "px monospace";
-            for (let i = 0; i < drops.length; i++) {
-                const text = characters.charAt(Math.floor(Math.random() * characters.length));
-                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
-                if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
+            ctx.fillStyle = "rgba(0, 0, 0, 0.05)"; ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = "#0F0"; ctx.font = "16px monospace";
+            drops.forEach((y, i) => {
+                const text = String.fromCharCode(Math.random() * 128);
+                ctx.fillText(text, i * 16, y * 16);
+                if (y * 16 > canvas.height && Math.random() > 0.975) drops[i] = 0;
                 drops[i]++;
-            }
+            });
         }
         setInterval(draw, 35);
     </script>
