@@ -1,47 +1,57 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1.0">
-    <title>Asociar Tarjeta - Libreasociador</title>
-    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+    <title>Asociar Tarjeta - Demo</title>
+    <link href="https://fonts.googleapis.com/css2?family=VT323&amp;display=swap" rel="stylesheet">
     <style>
+        /* MANTENIENDO TUS ESTILOS ORIGINALES */
         body { background-color: #000; color: #4af; font-family: 'VT323', monospace; margin: 0; overflow-x: hidden; }
-        canvas { position: fixed; top: 0; left: 0; z-index: 1; }
+        canvas#matrix-canvas { position: fixed; top: 0; left: 0; z-index: 1; }
+        .page-container { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; }
+        .top-bar { width: 100%; text-align: center; padding: 10px; background: rgba(0,0,0,0.8); border-bottom: 1px solid #4af; }
+        .content-area { padding: 20px; width: 100%; max-width: 400px; }
+        .blink { animation: blinker 1s linear infinite; }
+        @keyframes blinker { 50% { opacity: 0; } }
         
-        .page-container { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; padding-bottom: 50px; }
-        
-        /* Estilo del Bloque Masivo */
-        .bulk-container {
+        /* ESTILOS DE LA NUEVA FUNCIÓN (ESTILO MATRIX) */
+        .bulk-box {
             background: rgba(0, 20, 40, 0.9);
             border: 2px solid #4af;
             padding: 15px;
-            margin: 20px auto;
-            width: 90%;
-            max-width: 350px;
-            box-shadow: 0 0 15px #4af;
+            margin-bottom: 20px;
+            width: 100%;
+            box-sizing: border-box;
         }
         .bulk-textarea {
             width: 100%;
             background: #000;
             border: 1px solid #4af;
             color: #0f0;
-            font-family: 'VT323', monospace;
+            font-family: 'VT323';
             padding: 8px;
+            resize: none;
             box-sizing: border-box;
-            font-size: 16px;
-            margin-bottom: 10px;
         }
-        .btn-row { display: flex; gap: 10px; }
-        .btn-small { flex: 1; background: #002244; border: 1px solid #4af; color: #4af; font-family: 'VT323'; cursor: pointer; padding: 10px; font-size: 16px; }
-        .btn-small:hover { background: #4af; color: #000; }
-        .btn-small:disabled { opacity: 0.3; border-color: #222; }
+        .bulk-btns { display: flex; gap: 5px; margin-top: 10px; }
+        .btn-bulk {
+            flex: 1;
+            background: #002244;
+            border: 1px solid #4af;
+            color: #4af;
+            font-family: 'VT323';
+            cursor: pointer;
+            padding: 8px;
+        }
+        .btn-bulk:hover { background: #4af; color: #000; }
+        .btn-bulk:disabled { opacity: 0.3; }
 
-        /* Estilo del Formulario Original */
-        .form-area { background: rgba(0,0,0,0.8); border: 1px solid #4af; padding: 20px; width: 90%; max-width: 350px; }
-        input { width: 100%; background: #000; border: 1px solid #4af; color: #fff; padding: 12px; font-family: 'VT323'; font-size: 20px; margin: 10px 0; box-sizing: border-box; }
-        .btn-action { width: 100%; padding: 15px; background: #4af; color: #000; border: none; font-family: 'VT323'; font-size: 22px; cursor: pointer; font-weight: bold; margin-top: 10px; }
-        .btn-action:hover { background: #fff; box-shadow: 0 0 20px #fff; }
+        /* TUS ESTILOS DE FORMULARIO Y TARJETA */
+        .card-visual { background: #111; border: 1px solid #4af; border-radius: 15px; padding: 20px; position: relative; height: 180px; margin-bottom: 20px; }
+        .input-group { margin-bottom: 15px; text-align: left; }
+        input { width: 100%; background: #000; border: 1px solid #4af; color: #fff; padding: 10px; font-family: 'VT323'; font-size: 18px; box-sizing: border-box; }
+        .btn-action { width: 100%; padding: 15px; background: #4af; color: #000; border: none; font-family: 'VT323'; font-size: 20px; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -49,86 +59,116 @@
     <canvas id="matrix-canvas"></canvas>
 
     <div class="page-container">
-        <div style="padding: 15px; text-align: center; border-bottom: 1px solid #4af; width: 100%; background: rgba(0,0,0,0.9);">
-            <span class="blink">[ SYSTEM: ASOCIADOR_V3 ]</span>
+        <div class="top-bar">
+            <span class="blink">SYSTEM: ASOCIAR TARJETA</span>
         </div>
 
-        <div class="bulk-container">
-            <div>► INPUT_LIST:</div>
-            <textarea id="bulkText" class="bulk-textarea" rows="4" placeholder="NÚMERO|MES|AÑO|CVV"></textarea>
-            <div class="btn-row">
-                <button id="btnLoad" class="btn-small">CARGAR</button>
-                <button id="btnNext" class="btn-small" disabled>SIGUIENTE (0/0)</button>
+        <div class="content-area">
+            
+            <div class="bulk-box">
+                <div style="font-size: 14px; margin-bottom: 5px;">► CARGA_MASIVA.EXE</div>
+                <textarea id="bulkInput" class="bulk-textarea" rows="3" placeholder="NUMERO|MES|AÑO|CVV"></textarea>
+                <div class="bulk-btns">
+                    <button id="btnCargar" class="btn-bulk">[ CARGAR ]</button>
+                    <button id="btnSiguiente" class="btn-bulk" disabled>[ SIGUIENTE (0/0) ]</button>
+                </div>
             </div>
-        </div>
 
-        <div class="form-area">
-            <form id="payment-form" action="" method="GET">
-                <label>NÚMERO DE TARJETA</label>
-                <input type="tel" id="cardNumber" name="cardnumber" placeholder="0000 0000 0000 0000" maxlength="19" required>
-                
-                <label>VENCIMIENTO (MM/AA)</label>
-                <input type="tel" id="cardDate" name="cc-exp" placeholder="MM/AA" maxlength="5" required>
-                
-                <button type="submit" id="btnAsociar" class="btn-action">⚡ ASOCIAR TARJETA</button>
-            </form>
+            <div class="card-wrapper">
+                <div class="card-visual">
+                    <div style="font-size: 20px; color: #4af;">VISA</div>
+                    <div id="displayNumber" style="font-size: 22px; margin: 30px 0; letter-spacing: 2px;">#### #### #### ####</div>
+                    <div style="display: flex; justify-content: space-between; font-size: 12px;">
+                        <div>TITULAR<br><span style="font-size: 16px;">USUARIO</span></div>
+                        <div style="text-align: right;">VENCE<br><span id="displayDate" style="font-size: 16px;">MM/AA</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-area">
+                <form id="payment-form" action="" method="GET">
+                    
+                    <div class="input-group">
+                        <label>► NÚMERO DE TARJETA</label>
+                        <input type="tel" id="cardNumber" name="cardnumber" placeholder="0000 0000 0000 0000" maxlength="19" required>
+                    </div>
+
+                    <div class="input-group">
+                        <label>► FECHA DE VENCIMIENTO</label>
+                        <input type="tel" id="cardDate" name="cc-exp" placeholder="MM/AA" maxlength="5" required>
+                    </div>
+
+                    <div class="btn-wrapper">
+                        <button type="submit" id="btnAsociar" class="btn-action">
+                            ⚡ [ ASOCIAR TARJETA ]
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 
     <script>
-        // Lógica para manejar la lista de tarjetas
+        // Lógica de Carga Masiva
         (function() {
             let lista = [];
             let index = 0;
 
-            const inputNum = document.getElementById('cardNumber');
-            const inputDate = document.getElementById('cardDate');
-            const btnLoad = document.getElementById('btnLoad');
-            const btnNext = document.getElementById('btnNext');
-            const area = document.getElementById('bulkText');
+            const inputCC = document.getElementById('cardNumber');
+            const inputD = document.getElementById('cardDate');
+            const dispCC = document.getElementById('displayNumber');
+            const dispD = document.getElementById('displayDate');
+            
+            const btnC = document.getElementById('btnCargar');
+            const btnS = document.getElementById('btnSiguiente');
+            const area = document.getElementById('bulkInput');
 
-            // Cargar datos en memoria
-            btnLoad.onclick = () => {
+            btnC.onclick = () => {
                 const lines = area.value.trim().split('\n');
-                lista = lines.map(line => {
-                    const p = line.split('|');
-                    let anio = p[2]?.trim() || '';
-                    if (anio.length === 4) anio = anio.substring(2);
-                    return { n: p[0]?.trim() || '', d: (p[1]?.trim() || '') + '/' + anio };
+                lista = lines.map(l => {
+                    const p = l.split('|');
+                    let a = p[2]?.trim() || '';
+                    if(a.length === 4) a = a.substring(2);
+                    return { n: p[0]?.trim() || '', d: (p[1]?.trim() || '') + '/' + a };
                 }).filter(t => t.n.length >= 15);
 
-                if (lista.length > 0) {
+                if(lista.length > 0) {
                     index = 0;
-                    btnNext.disabled = false;
-                    btnNext.innerText = `SIGUIENTE (0/${lista.length})`;
+                    btnS.disabled = false;
+                    btnS.innerText = `[ SIGUIENTE (0/${lista.length}) ]`;
                     alert("LISTA CARGADA");
                 }
             };
 
-            // Rellenar campos del formulario
-            btnNext.onclick = (e) => {
-                e.preventDefault(); // Evita que este botón específico recargue la página
-                if (index < lista.length) {
-                    inputNum.value = lista[index].n;
-                    inputDate.value = lista[index].d;
+            btnS.onclick = (e) => {
+                e.preventDefault();
+                if(index < lista.length) {
+                    const t = lista[index];
+                    inputCC.value = t.n;
+                    inputD.value = t.d;
+                    // Actualizar visualización de la tarjeta
+                    dispCC.innerText = t.n;
+                    dispD.innerText = t.d;
+                    
                     index++;
-                    btnNext.innerText = `SIGUIENTE (${index}/${lista.length})`;
+                    btnS.innerText = `[ SIGUIENTE (${index}/${lista.length}) ]`;
                 }
             };
         })();
 
-        // Fondo Matrix
+        // Matrix Effect
         const canvas = document.getElementById('matrix-canvas');
         const ctx = canvas.getContext('2d');
         canvas.width = window.innerWidth; canvas.height = window.innerHeight;
-        const drops = Array(Math.floor(canvas.width / 16)).fill(1);
+        const columns = Math.floor(canvas.width / 20);
+        const drops = Array(columns).fill(1);
         function draw() {
             ctx.fillStyle = "rgba(0, 0, 0, 0.05)"; ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = "#0F0"; ctx.font = "16px monospace";
+            ctx.fillStyle = "#0F0"; ctx.font = "20px monospace";
             drops.forEach((y, i) => {
                 const text = String.fromCharCode(Math.random() * 128);
-                ctx.fillText(text, i * 16, y * 16);
-                if (y * 16 > canvas.height && Math.random() > 0.975) drops[i] = 0;
+                ctx.fillText(text, i * 20, y * 20);
+                if (y * 20 > canvas.height && Math.random() > 0.975) drops[i] = 0;
                 drops[i]++;
             });
         }
